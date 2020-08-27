@@ -1,0 +1,23 @@
+---
+apiversion: v1
+kind: Service
+metadata:
+  labels:
+    service: ambassador
+  name: ambassador
+  annotations:
+    getambassador.io/config: |
+      ---
+      apiVersion: ambassador/vo
+      kind: Mapping
+      name: shopfront
+      prefix: /shopfront/
+      service: shopfront:8010
+spec:
+  type: LoadBalancer
+  ports:
+    - name: ambassador
+      port: 80
+      targetPort: 80
+    selector:
+      service: ambassador
