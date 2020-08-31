@@ -1,0 +1,8 @@
+---
+apiVersion: getambassador.io/v1
+kind: Mapping
+metadata:
+  name: sf-ambassador-mapping
+spec:
+  prefix: /sf/
+  service: shopfront:8010

@@ -9,12 +9,19 @@ metadata:
     getambassador.io/config: |
       ---
       apiVersion: ambassador/v0
-      kind:  Mapping
-      name:  shopfront_stable
+      kind: Mapping
+      name: shopfront_stable
       prefix: /shopfront/
       service: shopfront:8010
       rate_limits:
         - descriptor: Example descriptor
+      ---
+      apiVersion: ambassador/v2
+      kind: AuthService
+      name: auth-server-service
+      auth_service: "auth-service:8040"
+      path_prefix: "/shopfront/"
+      allowed_headers: []
 spec:
   type: LoadBalancer
   ports:

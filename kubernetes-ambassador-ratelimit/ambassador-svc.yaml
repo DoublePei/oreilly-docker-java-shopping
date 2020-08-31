@@ -5,14 +5,6 @@ metadata:
   labels:
     service: ambassador
   name: ambassador
-  annotations:
-    getambassador.io/config: |
-      ---
-      apiVersion: ambassador/v0
-      kind: Mapping
-      name: shopfront
-      prefix: /shopfront/
-      service: shopfront:8010
 spec:
   type: LoadBalancer
   ports:

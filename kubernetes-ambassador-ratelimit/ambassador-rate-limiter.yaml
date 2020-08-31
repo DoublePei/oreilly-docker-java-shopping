@@ -38,3 +38,4 @@ spec:
         image: danielbryantuk/ratelimiter:0.3
         ports:
         - containerPort: 50051
+
