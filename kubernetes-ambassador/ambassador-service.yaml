@@ -28,3 +28,36 @@ spec:
     targetPort: 80
   selector:
     service: ambassador
+
+#    --- 限速 以及auth的配置
+#    apiVersion: v1
+#    kind: Service
+#    metadata:
+#      labels:
+#        service: ambassador
+#      name: ambassador
+#      annotations:
+#        getambassador.io/config: |
+#          ---
+#          apiVersion: ambassador/v0
+#          kind: Mapping
+#          name: shopfront_stable
+#          prefix: /shopfront/
+#          service: shopfront:8010
+#          rate_limits:
+#            - descriptor: Example descriptor
+#          ---
+#          apiVersion: ambassador/v2
+#          kind: AuthService
+#          name: auth-server-service
+#          auth_service: "auth-service:8040"
+#          path_prefix: "/shopfront/"
+#          allowed_headers: []
+#    spec:
+#      type: LoadBalancer
+#      ports:
+#        - name: ambassador
+#          port: 80
+#          targetPort: 80
+#      selector:
+#        service: ambassador
