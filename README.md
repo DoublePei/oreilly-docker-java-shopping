@@ -5,7 +5,7 @@ docker + k8s + ingress(ambassador api getway) + java(springboot) to build servic
 首先启动ambassador服务 
 
 然后添加 
-
+```bash
 ---
 apiVersion: v1
 kind: Service
@@ -38,4 +38,7 @@ spec:
     targetPort: 80
   selector:
     service: ambassador
+
+```
+
 使用AuthService服务来做认证和限流，在springboot的项目的拦截器中。限流认真使用redis+lua 做认证和限流 一次搞定避免多次链接redis 
