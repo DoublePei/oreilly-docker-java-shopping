@@ -1,59 +1,74 @@
 package uk.co.danielbryant.djshopping.shopfront.handler;
 
 import com.alibaba.fastjson.JSONObject;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 import uk.co.danielbryant.djshopping.shopfront.entiy.JsonResult;
 import uk.co.danielbryant.djshopping.shopfront.entiy.ResultCode;
+import uk.co.danielbryant.djshopping.shopfront.entiy.Token;
+import uk.co.danielbryant.djshopping.shopfront.ratelimit.RateLimiter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.io.PrintWriter;
 
 public class AuthInterceptor implements HandlerInterceptor {
 
-    private StringRedisTemplate stringRedisTemplate;
+    private RedisTemplate redisTemplate;
 
-    public AuthInterceptor(StringRedisTemplate stringRedisTemplate) {
-        this.stringRedisTemplate = stringRedisTemplate;
+    public AuthInterceptor(RedisTemplate redisTemplate) {
+        this.redisTemplate = redisTemplate;
     }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-
         //接受两个参数
-        String username = (String) request.getParameter("username");
-        String password = (String) request.getParameter("password");
-        System.out.println(username + ":" + password);
-        String myName = stringRedisTemplate.opsForValue()
-                .get("my_name");
-        System.out.println(myName);
-        //如果username = admin并且password = 123时，返回SC_OK，即http状态码200.
-        if (username != null && password != null) {
-            if (username.equals("admin") && password.equals("123")) {
-                response.reset();
-                response.setStatus(HttpServletResponse.SC_OK);
-
-                PrintWriter pw = response.getWriter();
-                pw.flush();
-                pw.close();
-
+        String key = request.getParameter("key");
+        String apiId = request.getParameter("api_id");
+        if (key != null || apiId != null) {
+            RateLimiter rateLimiter = new RateLimiter(redisTemplate);
+            Token token = rateLimiter.acquireToken(key, apiId);
+            System.out.println(token);
+            if (token.isAuthFaild()) {
+                getFaildResponse(response, ResultCode.NOT_LOGIN.getCode(), "认证错误,请正确使用appCode...");
+                return false;
+            }
+            if (token.isPass() || token.isAccessRedisFail()) {
+                getPassResponse(response);
+                return false;
+            }
+            if (token.isConfuse()) {
+                getFaildResponse(response, HttpStatus.TOO_MANY_REQUESTS.value(), "too many request...");
                 return false;
             }
         }
         //否则，返回SC_FORBIDDEN，即http状态码403.
+        getFaildResponse(response, HttpStatus.FORBIDDEN.value(), "请求参数错误,请正确使用appCode和ApiId...");
+
+        return false;
+    }
+
+    private void getPassResponse(HttpServletResponse response) throws IOException {
         response.reset();
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        response.setStatus(HttpStatus.OK.value());
+        PrintWriter pw = response.getWriter();
+        pw.flush();
+        pw.close();
+    }
+
+    private void getFaildResponse(HttpServletResponse response, int code, String message) throws IOException {
+        response.reset();
+        response.setStatus(code);
         response.setCharacterEncoding("UTF-8");
         response.setContentType("applcation/json;chartset=UTF-8");
         PrintWriter pw = response.getWriter();
 
-        pw.write(JSONObject.toJSONString(new JsonResult(ResultCode.NOT_LOGIN.getCode(), "forbidden", "auth failure.")));
+        pw.write(JSONObject.toJSONString(new JsonResult(code, "", message)));
         pw.flush();
         pw.close();
-
-        return false;
     }
 
     @Override

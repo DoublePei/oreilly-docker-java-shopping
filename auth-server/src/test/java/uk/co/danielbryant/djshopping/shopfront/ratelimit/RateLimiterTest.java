@@ -10,7 +10,7 @@ public class RateLimiterTest {
 
         RateLimiter rateLimiter = RateLimiter.create(1);
 
-        for (int i = 1; i <= 100; i++) {
+        for (int i = 1; i <= 1; i++) {
             double acquire = rateLimiter.acquire(i);
             System.out.println("acquire: " + i + " waiting for time:" + acquire);
         }
