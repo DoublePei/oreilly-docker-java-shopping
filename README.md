@@ -1,10 +1,10 @@
-docker + k8s + ingress(ambassador api getway) + java(springboot) to build service
+### docker + k8s + ingress(ambassador api getway) + java(springboot) to build service
 
 
 
-首先启动ambassador服务 
+***启动ambassador服务***
+启动mapping
 
-然后添加 
 ```bash
 ---
 apiVersion: v1
